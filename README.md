@@ -1,20 +1,20 @@
 # Genesis Scene Kit
 
-一套从我们现有 benchmark 场景生成流程中整理出的 Genesis 场景工具。重点是稳定复用严格 RayTracer、相机配置、RobotSmith 单臂资产、场景输出和 manifest，而不是把每一道题的多代实验脚本原样堆进仓库。
+A reusable Genesis scene toolkit extracted from our benchmark scene-generation pipeline. It focuses on strict RayTracer rendering, reproducible camera configuration, RobotSmith single-arm assets, structured outputs, and run manifests instead of publishing every experimental revision of each benchmark task.
 
 ![Ray-traced tabletop preview](docs/images/raytraced_tabletop_preview.png)
 
-## 你会得到什么
+## What Is Included
 
-- 明确的 `raytracer` / `rasterizer` 两种模式，正式渲染不会静默降级。
-- 项目内独立的 Genesis、CUDA、OptiX 和 LuisaRender 缓存目录。
-- 可复用桌面、墙面、目标区、透明碗、水面和同外观方块。
-- 可选 RobotSmith xArm7 + parallel gripper。
-- 每次运行输出 RGB、GIF 和记录 renderer/camera/runtime/assets 的 JSON manifest。
+- Explicit `raytracer` and `rasterizer` modes with no silent fallback for final rendering.
+- Project-local Genesis, CUDA, OptiX, and LuisaRender cache directories.
+- Reusable table, wall, target, transparent bowl, water surface, and visually identical block primitives.
+- Optional RobotSmith xArm7 with a parallel gripper.
+- RGB, GIF, and JSON manifest outputs recording the renderer, camera, runtime, and asset sources.
 
-## Windows 快速部署
+## Windows Quick Start
 
-推荐 Python 3.11、NVIDIA GPU 和较新的显卡驱动。在 PowerShell 中运行：
+Python 3.11, an NVIDIA GPU, and a recent graphics driver are recommended. Run the following commands in PowerShell:
 
 ```powershell
 git clone https://github.com/chengshenge/Genesis_scene.git
@@ -25,12 +25,12 @@ Set-ExecutionPolicy -Scope Process Bypass
 .\.venv\Scripts\Activate.ps1
 python -m pip install --upgrade pip setuptools wheel
 
-# 按本机驱动选择合适的 PyTorch CUDA wheel；团队当前环境使用 cu128。
+# Select the PyTorch CUDA wheel that matches your driver. Our tested environment uses cu128.
 python -m pip install torch torchvision --index-url https://download.pytorch.org/whl/cu128
 python -m pip install -e ".[dev]"
 
-# PyPI 的 genesis-world 不包含可直接使用的 LuisaRenderPy。
-# 下面的脚本会检出我们验证过的 Genesis commit，并编译 Windows/CUDA RayTracer。
+# The PyPI genesis-world package does not include a ready-to-use LuisaRenderPy build.
+# This script checks out our tested Genesis commit and builds the Windows/CUDA RayTracer.
 .\scripts\setup_raytracer_windows.ps1
 
 git clone https://github.com/UMass-Embodied-AGI/RobotSmith .external/RobotSmith
@@ -42,7 +42,7 @@ python scripts/check_environment.py --strict-raytracer
 python examples/raytraced_tabletop.py --renderer raytracer --backend gpu --spp 16
 ```
 
-输出在 `outputs/raytraced_tabletop/`：
+The example writes the following files to `outputs/raytraced_tabletop/`:
 
 ```text
 scene_rgb.png
@@ -51,55 +51,57 @@ scene_manifest.json
 generated_assets/open_bowl.obj
 ```
 
-首次 RayTracer 运行需要编译 Genesis kernel、shader 并建立缓存；我们在 Windows/RTX 3060 Ti 上的第一次最小 smoke test 约为 5 分钟，后续会复用缓存。先用较小图像测试更省时间：
+The first RayTracer run compiles Genesis kernels and shaders and creates several caches. Our first minimal smoke test took approximately five minutes on Windows with an RTX 3060 Ti; later runs reused the caches. Start with a small render while validating a new machine:
 
 ```powershell
 python examples/raytraced_tabletop.py --no-robot --renderer raytracer --backend gpu --width 320 --height 180 --spp 1 --settle-steps 1
 ```
 
-## 没有 RobotSmith 时先测试基础场景
+## Test Without RobotSmith
+
+The base scene can be rendered without downloading RobotSmith:
 
 ```powershell
 python examples/raytraced_tabletop.py --no-robot --renderer raytracer --backend gpu --spp 4
 ```
 
-若只想检查几何、相机和物体位置，可明确选择 rasterizer：
+Use rasterizer mode explicitly when you only need to inspect geometry, camera framing, or object placement:
 
 ```powershell
 python examples/raytraced_tabletop.py --no-robot --renderer rasterizer --backend gpu --width 640 --height 360
 ```
 
-Rasterizer 输出只用于调试，不应作为最终 benchmark RGB。
+Rasterizer output is intended for debugging and should not be used as the final photoreal benchmark RGB input.
 
 ## Linux
 
-安装命令相同，只需将虚拟环境激活替换为：
+Use the same installation sequence, but activate the virtual environment with:
 
 ```bash
 python3.11 -m venv .venv
 source .venv/bin/activate
 ```
 
-然后安装与你的驱动匹配的 PyTorch CUDA wheel，再执行 `pip install -e ".[dev]"`。RayTracer 还需要递归 clone Genesis，并按 `.external/Genesis/genesis/ext/LuisaRender/BUILD.md` 编译 LuisaRender；完成后设置：
+Install the PyTorch CUDA wheel that matches your driver, then run `pip install -e ".[dev]"`. RayTracer also requires a recursive Genesis clone and a LuisaRender build following `.external/Genesis/genesis/ext/LuisaRender/BUILD.md`. After building it, set:
 
 ```bash
 export GENESIS_SOURCE_ROOT="$PWD/.external/Genesis"
 export LUISA_RENDER_BUILD_BIN="$GENESIS_SOURCE_ROOT/genesis/ext/LuisaRender/build/bin"
 ```
 
-## 新建一个场景
+## Create a New Scene
 
-1. 复制 `examples/raytraced_tabletop.py`。
-2. 在 scene build 之前添加资产、材质、位置与碰撞体。
-3. 调整 `CameraSpec`，先用低分辨率和低 SPP 验证构图。
-4. 正式生成时提高 SPP，并检查 `scene_manifest.json` 中 `renderer_effective`、`rasterizer_fallback_used` 和运行环境。
-5. 不要提交下载的 BlenderKit/Objaverse 二进制资产；在 `docs/ASSETS.md` 记录资产 ID、来源和许可证。
+1. Copy `examples/raytraced_tabletop.py`.
+2. Add task-specific assets, materials, poses, and collision geometry before `scene.build()`.
+3. Adjust `CameraSpec`, then validate framing with a low resolution and low SPP.
+4. Increase SPP for the final render and verify `renderer_effective`, `rasterizer_fallback_used`, and the runtime information in `scene_manifest.json`.
+5. Do not commit downloaded BlenderKit or Objaverse binaries. Record asset IDs, sources, and licenses in `docs/ASSETS.md`.
 
-更完整的模块边界见 [docs/PIPELINE.md](docs/PIPELINE.md)，外部资产约定见 [docs/ASSETS.md](docs/ASSETS.md)。
+See [docs/PIPELINE.md](docs/PIPELINE.md) for module boundaries and [docs/ASSETS.md](docs/ASSETS.md) for external asset conventions.
 
-## 当前限制
+## Current Limitations
 
-- Genesis RayTracer 依赖单独编译的 LuisaRender 与 CUDA/OptiX；普通 `pip install genesis-world` 只能满足 Genesis Python 依赖，不能单独完成 RayTracer 部署。
-- 示例中的水面是可见的透明 surface，不是完整流体求解器。
-- RobotSmith 和 BlenderKit 资产各自受其上游许可证约束，本仓库不重新分发它们。
-- 仓库当前未声明开源许可证；组内外分发前请由维护者补充合适的 `LICENSE`。
+- Genesis RayTracer requires a separately built LuisaRender runtime and CUDA/OptiX. A normal `pip install genesis-world` installs the Python dependencies but does not complete the RayTracer setup.
+- The example water is a visible transparent surface, not a full fluid simulation.
+- RobotSmith and BlenderKit assets remain subject to their upstream licenses and are not redistributed here.
+- This repository does not currently declare an open-source license. The maintainer should add an appropriate `LICENSE` before distributing it outside the intended group.
