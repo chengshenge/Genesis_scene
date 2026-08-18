@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "genesis-scene-kit"
+version = "0.1.0"
+description = "Reusable Genesis scene construction and strict RayTracer rendering helpers."
+readme = "README.md"
+requires-python = ">=3.10,<3.13"
+dependencies = [
+  "genesis-world>=1.0,<1.2",
+  "imageio>=2.34",
+  "numpy>=1.26",
+  "Pillow>=10",
+  "trimesh>=4.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8"]
+
+[tool.setuptools.packages.find]
+include = ["genesis_scene*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
