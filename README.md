@@ -99,9 +99,36 @@ export LUISA_RENDER_BUILD_BIN="$GENESIS_SOURCE_ROOT/genesis/ext/LuisaRender/buil
 
 See [docs/PIPELINE.md](docs/PIPELINE.md) for module boundaries and [docs/ASSETS.md](docs/ASSETS.md) for external asset conventions.
 
+## Render A Task Configuration
+
+Photoreal scenes can be described as JSON task files instead of copy-pasted Python revisions. The repository includes
+`tasks/reference_robot_paper_can_pen.json`, which records the camera crop, strict RayTracer settings, three-point
+lighting, RoboWits white table, RobotSmith xArm pose, BlenderKit asset IDs, and object placement used for this image:
+
+![Photoreal paper, can, and pen task](docs/images/reference_robot_paper_can_pen_photoreal.jpg)
+
+After preparing the assets listed in [docs/ASSETS.md](docs/ASSETS.md), render the task with:
+
+```powershell
+python examples/render_task.py tasks/reference_robot_paper_can_pen.json
+```
+
+The default profile is `1600x1200`, `256 spp`, denoised CUDA/OptiX RayTracer. It never silently falls back to the
+rasterizer. Use command-line overrides for a quick framing check or a different final resolution:
+
+```powershell
+python examples/render_task.py tasks/reference_robot_paper_can_pen.json --width 960 --height 720 --spp 32
+```
+
+The runner writes `scene_rgb.png`, `scene_manifest.json`, generated PBR maps, and the generated robot URDF under
+`outputs/reference_robot_paper_can_pen/`. To create another task, copy the JSON and change assets, poses, camera, and
+lighting while keeping the strict renderer contract.
+
 ## Current Limitations
 
 - Genesis RayTracer requires a separately built LuisaRender runtime and CUDA/OptiX. A normal `pip install genesis-world` installs the Python dependencies but does not complete the RayTracer setup.
 - The example water is a visible transparent surface, not a full fluid simulation.
 - RobotSmith and BlenderKit assets remain subject to their upstream licenses and are not redistributed here.
+- The task-configured example requires prepared third-party meshes. The JSON records exact IDs and expected paths,
+  and the runner reports every missing file before Genesis starts.
 - This repository does not currently declare an open-source license. The maintainer should add an appropriate `LICENSE` before distributing it outside the intended group.

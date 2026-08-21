@@ -1,0 +1,83 @@
+{
+  "task_id": "reference_robot_paper_can_pen",
+  "description": "Single xArm over a RoboWits white table with paper, a red food can, and a black pen.",
+  "seed": 1701,
+  "renderer": {
+    "backend": "gpu",
+    "name": "raytracer",
+    "width": 1600,
+    "height": 1200,
+    "spp": 256,
+    "denoise": true,
+    "rasterizer_fallback_allowed": false
+  },
+  "camera": {
+    "pos": [1.68, 0.0, 1.55],
+    "lookat": [-0.025, 0.0, 0.31],
+    "up": [0.0, 0.0, 1.0],
+    "fov": 33.5
+  },
+  "lighting": {
+    "hdr": ".external/RobotSmith/assets/hdr.hdr",
+    "hdr_color_scale": [0.22, 0.22, 0.22],
+    "lights": [
+      {"pos": [2.0, -48.0, 34.0], "color": [255.0, 244.0, 231.0], "radius": 7.5, "intensity": 0.2},
+      {"pos": [10.0, 42.0, 24.0], "color": [222.0, 234.0, 255.0], "radius": 11.0, "intensity": 0.065},
+      {"pos": [-18.0, 6.0, 20.0], "color": [255.0, 250.0, 242.0], "radius": 8.0, "intensity": 0.035}
+    ]
+  },
+  "environment": {
+    "wall_bounds": {"lower": [-0.91, -1.85, -0.8], "upper": [-0.87, 1.85, 1.35]},
+    "floor_mesh": ".external/RobotSmith/assets/carpet.obj",
+    "floor_pos": [0.0, -0.58, -0.8],
+    "floor_scale": 0.03
+  },
+  "table": {
+    "source": "RoboWits work_table.glb",
+    "mesh": "assets/downloaded/robowits/work_table.glb",
+    "normal_texture": "assets/downloaded/robowits/worktable_texture/grained black plastic_Normal.jpg",
+    "roughness_texture": "assets/downloaded/robowits/worktable_texture/grained black plastic_Roughness.jpg",
+    "pos": [-0.0102, -0.0034, -0.75557],
+    "scale": [1.14, 1.0, 1.4377],
+    "file_meshes_are_zup": true
+  },
+  "robot": {
+    "type": "RobotSmith xArm7 with parallel gripper",
+    "urdf": ".external/RobotSmith/assets/xarm7_with_gripper_reduced_dof.urdf",
+    "base_pos": [-0.08, 0.57, 0.0],
+    "base_euler_deg": [0.0, 0.0, -90.0],
+    "scale": 1.12,
+    "tcp_pos": [0.08, 0.12, 0.44],
+    "tcp_euler_deg": [-1.0, 180.0, -80.0],
+    "gripper": 0.01
+  },
+  "objects": [
+    {
+      "id": "white_a4_paper",
+      "source": "BlenderKit",
+      "asset_id": "41aebdc7-0c53-4197-98eb-5f6d4a80116a",
+      "mesh": "assets/downloaded/blenderkit/41aebdc7-0c53-4197-98eb-5f6d4a80116a/obj.glb",
+      "target_extent": 0.36234,
+      "bottom_pos": [0.22, -0.285, 0.0012],
+      "euler_deg": [90.0, 0.0, 1.5]
+    },
+    {
+      "id": "red_food_can",
+      "source": "BlenderKit prepared scan",
+      "asset_id": "f52953ee-cb81-434d-a6ac-0008bff15508",
+      "mesh": "assets/downloaded/blenderkit/f52953ee-cb81-434d-a6ac-0008bff15508/reference_scanned_tall_red_food_can.glb",
+      "target_extent": 0.162,
+      "bottom_pos": [0.2, 0.005, 0.0015],
+      "euler_deg": [0.0, 0.0, 180.0]
+    },
+    {
+      "id": "black_ballpoint_pen",
+      "source": "BlenderKit",
+      "asset_id": "2f2c9c79-09c6-44de-9b3f-ae3e2bd3230c",
+      "mesh": "assets/downloaded/blenderkit/2f2c9c79-09c6-44de-9b3f-ae3e2bd3230c/obj.glb",
+      "target_extent": 0.217,
+      "bottom_pos": [0.22, 0.315, 0.004],
+      "euler_deg": [0.0, 90.0, 55.0]
+    }
+  ]
+}
