@@ -21,6 +21,21 @@ Copy `examples/raytraced_tabletop.py` and change only these task-specific parts:
 
 Keep runtime setup, renderer construction, output naming, and manifest fields shared. External visual meshes should use a visual entity plus a separately validated collision representation when the visual mesh is non-convex.
 
+## JSON task rendering
+
+`examples/render_task.py` loads a task with `genesis_scene.task_config`, validates all external paths before importing
+scene content, and writes the task config SHA-256 into the run manifest. A task config owns:
+
+- strict renderer resolution, SPP, denoise, and no-fallback policy;
+- camera pose and field of view;
+- HDR and explicit area lights;
+- table, robot, and object asset identities;
+- normalized object extent, orientation, and bottom-center placement.
+
+The reference task also demonstrates two rendering details that materially improve realism: calibrated RoboWits table
+micro-surface maps and material-preserving xArm GLB primitive splitting. Generated wall and table maps are written next
+to the output so a run can be audited without committing third-party source textures.
+
 ## Rendering profiles
 
 - `raytracer`: final RGB collection. Requires NVIDIA CUDA/OptiX and uses LuisaRender `wavepath`.
